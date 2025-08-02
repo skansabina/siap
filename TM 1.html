@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelas TM 1 - Angkatan 2025/2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#0D1821',
+                        'secondary': '#344966', 
+                        'accent': '#7D92AD',
+                        'light': '#B4CDED',
+                        'lightest': '#E9F0F8'
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-hidden { transform: translateY(-100%); }
+
+        /* Fade down animation */
+        @keyframes fadeDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeDown {
+            animation: fadeDown 0.6s ease forwards;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-lightest via-light/30 to-lightest min-h-screen">
+    <!-- Navigation Toggle -->
+    <button id="navToggle" class="fixed top-4 right-4 z-50 bg-secondary text-white p-2 sm:p-3 rounded-full shadow-xl hover:bg-primary transition-all transform hover:scale-110">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+
+    <!-- Header -->
+    <header id="mainNav" class="bg-gradient-to-r from-primary to-secondary shadow-2xl transition-transform duration-300">
+        <div class="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                <div class="text-center sm:text-left">
+                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-lg">🎓 Kelas TM 1</h1>
+                    <p class="text-light text-sm sm:text-base lg:text-lg">✨ Angkatan 2025/2026 ✨</p>
+                </div>
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                    <button id="userModeBtn" class="bg-gradient-to-r from-accent to-secondary text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-full hover:from-secondary hover:to-primary transition-all transform hover:scale-105 shadow-lg font-semibold text-sm sm:text-base">👤 Mode User</button>
+                    <button id="adminModeBtn" class="bg-lightest text-primary px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-full hover:bg-light transition-all transform hover:scale-105 shadow-lg font-semibold text-sm sm:text-base">🔐 Mode Admin</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- User Section -->
+    <div id="userSection" class="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <!-- Tab Navigation -->
+        <nav class="bg-white rounded-xl sm:rounded-2xl shadow-lg mb-6 sm:mb-8 p-4 sm:p-6 border border-light">
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
+                <button class="tab-btn active bg-light text-primary px-3 sm:px-4 lg:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl font-semibold transition-all hover:bg-accent hover:text-white shadow-sm text-xs sm:text-sm lg:text-base" data-tab="students">👥 <span class="hidden sm:inline">Daftar</span> Siswa</button>
+                <button class="tab-btn bg-lightest text-secondary px-3 sm:px-4 lg:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl font-semibold hover:bg-light hover:text-primary transition-all shadow-sm text-xs sm:text-sm lg:text-base" data-tab="schedule">📚 <span class="hidden sm:inline">Jadwal</span> Pelajaran</button>
+                <button class="tab-btn bg-lightest text-secondary px-3 sm:px-4 lg:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl font-semibold hover:bg-light hover:text-primary transition-all shadow-sm text-xs sm:text-sm lg:text-base" data-tab="cleaning">🧹 <span class="hidden sm:inline">Jadwal</span> Piket</button>
+                <button class="tab-btn bg-lightest text-secondary px-3 sm:px-4 lg:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl font-semibold hover:bg-light hover:text-primary transition-all shadow-sm text-xs sm:text-sm lg:text-base" data-tab="activities">🎉 Kegiatan</button>
+                <button class="tab-btn bg-lightest text-secondary px-3 sm:px-4 lg:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl font-semibold hover:bg-light hover:text-primary transition-all shadow-sm text-xs sm:text-sm lg:text-base" data-tab="social">📱 Sosial Media</button>
+            </div>
+        </nav>
+
+        <!-- Students Tab -->
+        <div id="students" class="tab-content active">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 border border-light">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary">👥 Daftar Siswa</h2>
+                    <div class="relative w-full sm:w-auto">
+                        <input type="text" id="studentSearch" placeholder="Cari siswa..." class="w-full sm:w-64 pl-10 sm:pl-12 pr-4 sm:pr-6 py-3 sm:py-4 border-2 border-light rounded-xl sm:rounded-2xl focus:ring-4 focus:ring-accent/30 focus:border-accent bg-white shadow-lg text-sm sm:text-base lg:text-lg font-medium">
+                        <svg class="absolute left-3 sm:left-4 top-3.5 sm:top-5 h-5 w-5 sm:h-6 sm:w-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div id="studentsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                    <!-- Sample students -->
+                    <div class="student-card bg-gradient-to-br from-secondary to-primary p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-light shadow-2xl transform hover:scale-105 transition-all">
+                        <div class="flex items-center space-x-3 sm:space-x-4">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-lightest rounded-full flex items-center justify-center text-primary font-bold text-lg sm:text-xl lg:text-2xl shadow-lg flex-shrink-0">A1</div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-bold text-white text-base sm:text-lg lg:text-xl drop-shadow-lg truncate">Ahmad Rizki</h3>
+                                <p class="text-light font-semibold text-sm sm:text-base">📋 Absen: 1</p>
+                                <p class="text-lightest italic mt-1 sm:mt-2 font-medium text-xs sm:text-sm lg:text-base line-clamp-2">"✨ Belajar adalah investasi terbaik"</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="student-card bg-gradient-to-br from-accent to-secondary p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-light shadow-2xl transform hover:scale-105 transition-all">
+                        <div class="flex items-center space-x-3 sm:space-x-4">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-lightest rounded-full flex items-center justify-center text-primary font-bold text-lg sm:text-xl lg:text-2xl shadow-lg flex-shrink-0">B2</div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-bold text-white text-base sm:text-lg lg:text-xl drop-shadow-lg truncate">Bella Sari</h3>
+                                <p class="text-light font-semibold text-sm sm:text-base">📋 Absen: 2</p>
+                                <p class="text-lightest italic mt-1 sm:mt-2 font-medium text-xs sm:text-sm lg:text-base line-clamp-2">"🌟 Sukses dimulai dari niat yang kuat"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Tab -->
+        <div id="schedule" class="tab-content">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 border border-light">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-6 sm:mb-8">📚 Jadwal Pelajaran</h2>
+                <div class="overflow-x-auto rounded-xl sm:rounded-2xl shadow-xl">
+                    <table class="w-full border-collapse bg-white rounded-xl sm:rounded-2xl overflow-hidden min-w-[600px]">
+                        <thead>
+                            <tr class="bg-gradient-to-r from-primary to-secondary">
+                                <th class="border-2 border-white px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-left font-bold text-white text-sm sm:text-base lg:text-lg">⏰ Jam</th>
+                                <th class="border-2 border-white px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-bold text-white text-sm sm:text-base lg:text-lg">🌅 Senin</th>
+                                <th class="border-2 border-white px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-bold text-white text-sm sm:text-base lg:text-lg">🌞 Selasa</th>
+                                <th class="border-2 border-white px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-bold text-white text-sm sm:text-base lg:text-lg">🌤️ Rabu</th>
+                                <th class="border-2 border-white px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-bold text-white text-sm sm:text-base lg:text-lg">🌈 Kamis</th>
+                                <th class="border-2 border-white px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-bold text-white text-sm sm:text-base lg:text-lg">🌟 Jumat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleTable">
+                            <tr class="hover:bg-lightest transition-all">
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 font-bold bg-light text-primary text-xs sm:text-sm lg:text-base">07:00-07:45</td>
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">📐 Matematika</td>
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">📖 Bahasa Indonesia</td>
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">⚛️ Fisika</td>
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">🧪 Kimia</td>
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">🌱 Biologi</td>
+                            </tr>
+                            <tr class="hover:bg-lightest transition-all">
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 font-bold bg-light text-primary text-xs sm:text-sm lg:text-base">07:45-08:30</td>
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">📐 Matematika</td>
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">📖 Bahasa Indonesia</td>
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">⚛️ Fisika</td>
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">🧪 Kimia</td>
+                                <td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">🌱 Biologi</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cleaning Tab -->
+        <div id="cleaning" class="tab-content">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 border border-light">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-6 sm:mb-8">🧹 Jadwal Piket</h2>
+                <div id="cleaningList" class="space-y-4 sm:space-y-6">
+                    <!-- Cleaning schedule will be populated here by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Activities Tab -->
+        <div id="activities" class="tab-content">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 border border-light">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-6 sm:mb-8">🎉 Kegiatan Kelas</h2>
+                <div id="activitiesList" class="space-y-6 sm:space-y-8">
+                    <div class="bg-gradient-to-br from-secondary to-primary p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl border border-light shadow-2xl transform hover:scale-105 transition-all">
+                        <div class="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-6">
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-lightest rounded-xl sm:rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
+                                <svg class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-white drop-shadow-lg">📝 Lomba Karya Tulis Ilmiah</h3>
+                                <p class="text-light font-bold text-sm sm:text-base lg:text-lg mb-2 sm:mb-3">📅 15 Januari 2025</p>
+                                <p class="text-lightest font-medium text-sm sm:text-base lg:text-lg leading-relaxed">Kegiatan lomba karya tulis ilmiah tingkat sekolah dengan tema "🚀 Teknologi untuk Masa Depan". Seluruh siswa diharapkan berpartisipasi aktif! ✨</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Social Media Tab -->
+        <div id="social" class="tab-content">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 border border-light">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-6 sm:mb-8">📱 Sosial Media</h2>
+                <div id="socialButtonsContainer" class="flex flex-wrap justify-center gap-4 sm:gap-6">
+                    <!-- Social media buttons will be populated here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Section -->
+    <div id="adminSection" class="hidden container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <!-- Admin Login -->
+        <div id="adminLogin" class="max-w-sm sm:max-w-md lg:max-w-lg mx-auto bg-white rounded-xl sm:rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-10 border border-light">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-primary mb-6 sm:mb-8">🔐 Login Admin</h2>
+            <form id="loginForm">
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-primary text-sm sm:text-base lg:text-lg font-bold mb-2 sm:mb-3">📧 Email</label>
+                    <input type="email" id="adminEmail" class="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-light rounded-xl sm:rounded-2xl focus:ring-4 focus:ring-accent/30 focus:border-accent bg-white shadow-lg text-sm sm:text-base lg:text-lg font-medium" required>
+                </div>
+                <div class="mb-6 sm:mb-8">
+                    <label class="block text-primary text-sm sm:text-base lg:text-lg font-bold mb-2 sm:mb-3">🔒 Password</label>
+                    <input type="password" id="adminPassword" class="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-light rounded-xl sm:rounded-2xl focus:ring-4 focus:ring-accent/30 focus:border-accent bg-white shadow-lg text-sm sm:text-base lg:text-lg font-medium" required>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-accent to-secondary text-white py-3 sm:py-4 rounded-xl sm:rounded-2xl hover:from-secondary hover:to-primary transition-all transform hover:scale-105 shadow-xl font-bold text-sm sm:text-base lg:text-lg">🚀 Login</button>
+            </form>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Dashboard Admin</h2>
+                <button id="logoutBtn" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-lg text-sm sm:text-base">Logout</button>
+            </div>
+
+            <!-- Admin Tab Navigation -->
+            <nav class="bg-white rounded-lg shadow-md mb-6 sm:mb-8 p-2 border border-light">
+                <div class="grid grid-cols-2 lg:grid-cols-5 gap-2">
+                    <button class="admin-tab-btn active bg-secondary text-white px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors text-xs sm:text-sm lg:text-base" data-tab="admin-students">Kelola Siswa</button>
+                    <button class="admin-tab-btn bg-lightest text-secondary px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-lg font-medium hover:bg-light transition-colors text-xs sm:text-sm lg:text-base" data-tab="admin-schedule">Kelola Jadwal</button>
+                    <button class="admin-tab-btn bg-lightest text-secondary px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-lg font-medium hover:bg-light transition-colors text-xs sm:text-sm lg:text-base" data-tab="admin-cleaning">Kelola Piket</button>
+                    <button class="admin-tab-btn bg-lightest text-secondary px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-lg font-medium hover:bg-light transition-colors text-xs sm:text-sm lg:text-base" data-tab="admin-activities">Kelola Kegiatan</button>
+                    <button class="admin-tab-btn bg-lightest text-secondary px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-lg font-medium hover:bg-light transition-colors text-xs sm:text-sm lg:text-base" data-tab="admin-social">Kelola Sosial Media</button>
+                </div>
+            </nav>
+
+            <!-- Admin Students Tab -->
+            <div id="admin-students" class="admin-tab-content">
+                <div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-4 sm:space-y-0">
+                        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">Kelola Siswa</h3>
+                        <button id="addStudentBtn" class="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base w-full sm:w-auto">Tambah Siswa</button>
+                    </div>
+                    
+                    <!-- Add Student Form -->
+                    <div id="addStudentForm" class="hidden bg-gray-50 p-4 sm:p-6 rounded-lg mb-4 sm:mb-6">
+                        <h4 class="text-base sm:text-lg font-semibold mb-4">Tambah Siswa Baru</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <input type="text" id="studentName" placeholder="Nama Siswa" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+                            <input type="number" id="studentNumber" placeholder="Nomor Absen" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+                            <input type="text" id="studentMotivation" placeholder="Kata Motivasi" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 sm:col-span-2 text-sm sm:text-base">
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">📷 Foto Siswa (Opsional)</label>
+                                <input type="file" id="studentPhoto" accept="image/*" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 w-full text-sm sm:text-base">
+                                <div id="studentPhotoPreview" class="mt-2 hidden">
+                                    <img id="studentPhotoImg" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-gray-300" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
+                            <button id="saveStudentBtn" class="bg-indigo-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base">Simpan</button>
+                            <button id="cancelStudentBtn" class="bg-gray-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm sm:text-base">Batal</button>
+                        </div>
+                    </div>
+
+                    <div id="adminStudentsList" class="space-y-4">
+                        <!-- Admin student list will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Schedule Tab -->
+            <div id="admin-schedule" class="admin-tab-content hidden">
+                <div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-4 sm:space-y-0">
+                        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">Kelola Jadwal Pelajaran</h3>
+                        <button id="resetScheduleBtn" class="bg-red-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base w-full sm:w-auto">🗑️ Reset Jadwal</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="bg-indigo-50">
+                                    <th class="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm lg:text-base">Jam</th>
+                                    <th class="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-center font-semibold text-xs sm:text-sm lg:text-base">Senin</th>
+                                    <th class="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-center font-semibold text-xs sm:text-sm lg:text-base">Selasa</th>
+                                    <th class="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-center font-semibold text-xs sm:text-sm lg:text-base">Rabu</th>
+                                    <th class="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-center font-semibold text-xs sm:text-sm lg:text-base">Kamis</th>
+                                    <th class="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-center font-semibold text-xs sm:text-sm lg:text-base">Jumat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminScheduleTable">
+                                <!-- Schedule editing table will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <button id="saveScheduleBtn" class="mt-4 sm:mt-6 bg-indigo-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base w-full sm:w-auto">Simpan Jadwal</button>
+                </div>
+            </div>
+
+            <!-- Admin Cleaning Tab -->
+            <div id="admin-cleaning" class="admin-tab-content hidden">
+                <div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-4 sm:space-y-0">
+                        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">Kelola Jadwal Piket</h3>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                            <button id="addCleaningBtn" class="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base">Tambah Jadwal</button>
+                            <button id="resetCleaningBtn" class="bg-red-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base">🗑️ Reset Semua</button>
+                        </div>
+                    </div>
+                    
+                    <div id="addCleaningForm" class="hidden bg-gray-50 p-4 sm:p-6 rounded-lg mb-4 sm:mb-6">
+                        <h4 class="text-base sm:text-lg font-semibold mb-4">Tambah Jadwal Piket</h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <select id="cleaningDay" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+                                <option value="">Pilih Hari</option>
+                                <option value="Senin">Senin</option>
+                                <option value="Selasa">Selasa</option>
+                                <option value="Rabu">Rabu</option>
+                                <option value="Kamis">Kamis</option>
+                                <option value="Jumat">Jumat</option>
+                            </select>
+                            <div>
+                                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Pilih Siswa untuk Piket:</label>
+                                <div id="studentCheckboxes" class="max-h-40 sm:max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white">
+                                    <p class="text-gray-500 text-xs sm:text-sm">Memuat daftar siswa...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
+                            <button id="saveCleaningBtn" class="bg-indigo-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base">Simpan</button>
+                            <button id="cancelCleaningBtn" class="bg-gray-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm sm:text-base">Batal</button>
+                        </div>
+                    </div>
+
+                    <div id="adminCleaningList" class="space-y-4">
+                        <!-- Admin cleaning list will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Activities Tab -->
+            <div id="admin-activities" class="admin-tab-content hidden">
+                <div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-4 sm:space-y-0">
+                        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">Kelola Kegiatan</h3>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                            <button id="addActivityBtn" class="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base">Tambah Kegiatan</button>
+                            <button id="resetActivitiesBtn" class="bg-red-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base">🗑️ Reset Semua</button>
+                        </div>
+                    </div>
+                    
+                    <div id="addActivityForm" class="hidden bg-gray-50 p-4 sm:p-6 rounded-lg mb-4 sm:mb-6">
+                        <h4 class="text-base sm:text-lg font-semibold mb-4">Tambah Kegiatan Baru</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <input type="text" id="activityName" placeholder="Nama Kegiatan" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+                            <input type="date" id="activityDate" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+                            <textarea id="activityDescription" placeholder="Deskripsi Kegiatan" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 sm:col-span-2 h-20 sm:h-24 text-sm sm:text-base"></textarea>
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">📷 Foto Kegiatan (Opsional)</label>
+                                <input type="file" id="activityPhoto" accept="image/*" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 w-full text-sm sm:text-base">
+                                <div id="activityPhotoPreview" class="mt-2 hidden">
+                                    <img id="activityPhotoImg" class="w-24 h-18 sm:w-32 sm:h-24 rounded-lg object-cover border-2 border-gray-300" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
+                            <button id="saveActivityBtn" class="bg-indigo-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base">Simpan</button>
+                            <button id="cancelActivityBtn" class="bg-gray-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm sm:text-base">Batal</button>
+                        </div>
+                    </div>
+
+                    <div id="adminActivitiesList" class="space-y-4 sm:space-y-6">
+                        <!-- Admin activities list will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin Social Media Tab -->
+            <div id="admin-social" class="admin-tab-content hidden">
+                <div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-4 sm:space-y-0">
+                        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">Kelola Tombol Sosial Media</h3>
+                        <button id="addSocialButton" class="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base w-full sm:w-auto">Tambah Tombol</button>
+                    </div>
+                    
+                    <!-- Add Social Button Form -->
+                    <div id="addSocialForm" class="hidden bg-gray-50 p-4 sm:p-6 rounded-lg mb-4 sm:mb-6">
+                        <h4 class="text-base sm:text-lg font-semibold mb-4">Tambah/Edit Tombol Sosial Media</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <input type="text" id="socialButtonName" placeholder="Nama Tombol" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+                            <input type="text" id="socialButtonLink" placeholder="Link Tujuan" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+                            <input type="color" id="socialButtonColor" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base h-12">
+                            <input type="text" id="socialButtonIcon" placeholder="Icon (emoji)" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+                        </div>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
+                            <button id="saveSocialButton" class="bg-indigo-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base">Simpan</button>
+                            <button id="cancelSocialButton" class="bg-gray-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm sm:text-base">Batal</button>
+                        </div>
+                    </div>
+
+                    <div id="adminSocialButtonsList" class="space-y-4">
+                        <!-- Admin social buttons list will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEnKYCY3xJRfgLXuB12E8XDf4IvLussjg",
+            authDomain: "tm-1-18994.firebaseapp.com",
+            projectId: "tm-1-18994",
+            storageBucket: "tm-1-18994.firebasestorage.app",
+            messagingSenderId: "322788242615",
+            appId: "1:322788242615:web:77f2006d7ce3942a1cc932"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Global variables
+        let currentMode = 'user';
+        let studentsData = [];
+        let scheduleData = {};
+        let cleaningData = [];
+        let activitiesData = [];
+        let socialButtonsData = [];
+
+        // Navigation toggle
+        document.getElementById('navToggle').addEventListener('click', function() {
+            const nav = document.getElementById('mainNav');
+            nav.classList.toggle('nav-hidden');
+        });
+
+        // Mode switching
+        document.getElementById('userModeBtn').addEventListener('click', function() {
+            currentMode = 'user';
+            document.getElementById('userSection').classList.remove('hidden');
+            document.getElementById('adminSection').classList.add('hidden');
+            this.classList.add('bg-indigo-600');
+            this.classList.remove('bg-gray-600');
+            document.getElementById('adminModeBtn').classList.add('bg-gray-600');
+            document.getElementById('adminModeBtn').classList.remove('bg-indigo-600');
+        });
+
+        document.getElementById('adminModeBtn').addEventListener('click', function() {
+            currentMode = 'admin';
+            document.getElementById('userSection').classList.add('hidden');
+            document.getElementById('adminSection').classList.remove('hidden');
+            this.classList.add('bg-indigo-600');
+            this.classList.remove('bg-gray-600');
+            document.getElementById('userModeBtn').classList.add('bg-gray-600');
+            document.getElementById('userModeBtn').classList.remove('bg-indigo-600');
+        });
+
+        // User tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetTab = this.getAttribute('data-tab');
+                
+                // Update button styles - reset all to inactive
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('bg-light', 'text-primary');
+                    b.classList.add('bg-lightest', 'text-secondary');
+                });
+                
+                // Set active button
+                this.classList.add('bg-light', 'text-primary');
+                this.classList.remove('bg-lightest', 'text-secondary');
+                
+                // Show target tab
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(targetTab).classList.add('active');
+            });
+        });
+
+        // Admin tab switching
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('admin-tab-btn')) {
+                const targetTab = e.target.getAttribute('data-tab');
+                
+                // Update button styles
+                document.querySelectorAll('.admin-tab-btn').forEach(b => {
+                    b.classList.remove('bg-secondary', 'text-white');
+                    b.classList.add('bg-lightest', 'text-secondary');
+                });
+                e.target.classList.add('bg-secondary', 'text-white');
+                e.target.classList.remove('bg-lightest', 'text-secondary');
+                
+                // Show target tab
+                document.querySelectorAll('.admin-tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById(targetTab).classList.remove('hidden');
+            }
+        });
+
+        // Student search functionality
+        document.getElementById('studentSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const studentCards = document.querySelectorAll('.student-card');
+            
+            studentCards.forEach(card => {
+                const studentName = card.querySelector('h3').textContent.toLowerCase();
+                if (studentName.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Admin login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    document.getElementById('adminLogin').classList.add('hidden');
+                    document.getElementById('adminDashboard').classList.remove('hidden');
+                    loadAdminData();
+                })
+                .catch((error) => {
+                    alert('Login gagal: ' + error.message);
+                });
+        });
+
+        // Admin logout
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            auth.signOut().then(() => {
+                document.getElementById('adminLogin').classList.remove('hidden');
+                document.getElementById('adminDashboard').classList.add('hidden');
+            });
+        });
+        
+        // Social Media Buttons functionality
+        document.getElementById('addSocialButton').addEventListener('click', function() {
+            document.getElementById('addSocialForm').classList.remove('hidden');
+        });
+        
+        document.getElementById('cancelSocialButton').addEventListener('click', function() {
+            document.getElementById('addSocialForm').classList.add('hidden');
+            clearSocialForm();
+        });
+        
+        document.getElementById('saveSocialButton').addEventListener('click', function() {
+            const name = document.getElementById('socialButtonName').value.trim();
+            const link = document.getElementById('socialButtonLink').value.trim();
+            const color = document.getElementById('socialButtonColor').value;
+            const icon = document.getElementById('socialButtonIcon').value.trim();
+            
+            if (!name || !link) {
+                alert('Mohon lengkapi nama tombol dan link tujuan!');
+                return;
+            }
+            
+            const socialButtonData = {
+                name: name,
+                link: link,
+                color: color || '#344966',
+                icon: icon || '🔗',
+                timestamp: new Date()
+            };
+            
+            // Add to local array first for immediate display
+            const newSocialButton = { id: Date.now().toString(), ...socialButtonData };
+            socialButtonsData.push(newSocialButton);
+            
+            // Update displays immediately
+            renderSocialButtons();
+            renderAdminSocialButtons();
+            
+            // Save to Firestore
+            db.collection('socialButtons').add(socialButtonData)
+                .then((docRef) => {
+                    // Update the local data with the real Firestore ID
+                    const socialButtonIndex = socialButtonsData.findIndex(s => s.id === newSocialButton.id);
+                    if (socialButtonIndex !== -1) {
+                        socialButtonsData[socialButtonIndex].id = docRef.id;
+                    }
+                    
+                    alert('✅ Tombol sosial media berhasil ditambahkan!');
+                    clearSocialForm();
+                    document.getElementById('addSocialForm').classList.add('hidden');
+                })
+                .catch((error) => {
+                    // Remove from local array if Firestore save failed
+                    const failedIndex = socialButtonsData.findIndex(s => s.id === newSocialButton.id);
+                    if (failedIndex !== -1) {
+                        socialButtonsData.splice(failedIndex, 1);
+                        renderSocialButtons();
+                        renderAdminSocialButtons();
+                    }
+                    alert('❌ Error menyimpan ke database: ' + error.message);
+                });
+        });
+
+        // Add student form toggle
+        document.getElementById('addStudentBtn').addEventListener('click', function() {
+            document.getElementById('addStudentForm').classList.toggle('hidden');
+        });
+
+        document.getElementById('cancelStudentBtn').addEventListener('click', function() {
+            document.getElementById('addStudentForm').classList.add('hidden');
+            clearStudentForm();
+        });
+
+        // Save student
+        document.getElementById('saveStudentBtn').addEventListener('click', function() {
+            const name = document.getElementById('studentName').value.trim();
+            const number = document.getElementById('studentNumber').value.trim();
+            const motivation = document.getElementById('studentMotivation').value.trim();
+            const photoFile = document.getElementById('studentPhoto').files[0];
+            
+            if (!name || !number || !motivation) {
+                alert('Mohon lengkapi semua field yang wajib!');
+                return;
+            }
+            
+            // Check if student number already exists
+            const existingStudent = studentsData.find(student => student.number === parseInt(number));
+            if (existingStudent) {
+                alert('Nomor absen sudah digunakan! Pilih nomor lain.');
+                return;
+            }
+            
+            // Convert photo to base64 if exists
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const studentData = {
+                        name: name,
+                        number: parseInt(number),
+                        motivation: motivation,
+                        photo: e.target.result,
+                        timestamp: new Date()
+                    };
+                    
+                    saveStudentToFirestore(studentData);
+                };
+                reader.readAsDataURL(photoFile);
+            } else {
+                const studentData = {
+                    name: name,
+                    number: parseInt(number),
+                    motivation: motivation,
+                    photo: null,
+                    timestamp: new Date()
+                };
+                
+                saveStudentToFirestore(studentData);
+            }
+        });
+
+        function saveStudentToFirestore(studentData) {
+            // Add to local array first for immediate display
+            const newStudent = { id: Date.now().toString(), ...studentData };
+            studentsData.push(newStudent);
+            studentsData.sort((a, b) => a.number - b.number);
+            
+            // Update displays immediately
+            renderStudents();
+            renderAdminStudents();
+            
+            // Save to Firestore
+            db.collection('students').add(studentData)
+                .then((docRef) => {
+                    // Update the local data with the real Firestore ID
+                    const studentIndex = studentsData.findIndex(s => s.id === newStudent.id);
+                    if (studentIndex !== -1) {
+                        studentsData[studentIndex].id = docRef.id;
+                    }
+                    
+                    alert('✅ Siswa berhasil ditambahkan dan muncul di halaman user!');
+                    clearStudentForm();
+                    document.getElementById('addStudentForm').classList.add('hidden');
+                })
+                .catch((error) => {
+                    // Remove from local array if Firestore save failed
+                    const failedIndex = studentsData.findIndex(s => s.id === newStudent.id);
+                    if (failedIndex !== -1) {
+                        studentsData.splice(failedIndex, 1);
+                        renderStudents();
+                        renderAdminStudents();
+                    }
+                    alert('❌ Error menyimpan ke database: ' + error.message);
+                });
+        }
+
+        // Add cleaning form toggle
+        document.getElementById('addCleaningBtn').addEventListener('click', function() {
+            document.getElementById('addCleaningForm').classList.toggle('hidden');
+            if (!document.getElementById('addCleaningForm').classList.contains('hidden')) {
+                populateStudentCheckboxes();
+            }
+        });
+
+        document.getElementById('cancelCleaningBtn').addEventListener('click', function() {
+            document.getElementById('addCleaningForm').classList.add('hidden');
+            clearCleaningForm();
+        });
+
+        // Save cleaning schedule
+        document.getElementById('saveCleaningBtn').addEventListener('click', function() {
+            const day = document.getElementById('cleaningDay').value.trim();
+            const selectedStudents = getSelectedStudents();
+            
+            if (!day || selectedStudents.length === 0) {
+                alert('Mohon pilih hari dan minimal satu siswa!');
+                return;
+            }
+            
+            const students = selectedStudents.join(', ');
+            
+            // Check if day already exists
+            const existingCleaning = cleaningData.find(cleaning => cleaning.day === day);
+            if (existingCleaning) {
+                if (confirm('Jadwal untuk hari ' + day + ' sudah ada. Ingin mengganti?')) {
+                    // Update existing
+                    existingCleaning.students = students;
+                    
+                    // Update displays immediately
+                    renderCleaning();
+                    renderAdminCleaning();
+                    
+                    // Update in Firestore
+                    db.collection('cleaning').doc(existingCleaning.id).update({
+                        students: students,
+                        timestamp: new Date()
+                    })
+                    .then(() => {
+                        alert('✅ Jadwal piket berhasil diperbarui dan muncul di halaman user!');
+                        clearCleaningForm();
+                        document.getElementById('addCleaningForm').classList.add('hidden');
+                    })
+                    .catch((error) => {
+                        alert('❌ Error memperbarui: ' + error.message);
+                    });
+                }
+                return;
+            }
+            
+            const cleaningDataObj = {
+                day: day,
+                students: students,
+                timestamp: new Date()
+            };
+            
+            // Add to local array first for immediate display
+            const newCleaning = { id: Date.now().toString(), ...cleaningDataObj };
+            cleaningData.push(newCleaning);
+            
+            // Update displays immediately
+            renderCleaning();
+            renderAdminCleaning();
+            
+            // Save to Firestore
+            db.collection('cleaning').add(cleaningDataObj)
+                .then((docRef) => {
+                    // Update the local data with the real Firestore ID
+                    const cleaningIndex = cleaningData.findIndex(c => c.id === newCleaning.id);
+                    if (cleaningIndex !== -1) {
+                        cleaningData[cleaningIndex].id = docRef.id;
+                    }
+                    
+                    alert('✅ Jadwal piket berhasil ditambahkan dan muncul di halaman user!');
+                    clearCleaningForm();
+                    document.getElementById('addCleaningForm').classList.add('hidden');
+                })
+                .catch((error) => {
+                    // Remove from local array if Firestore save failed
+                    const failedIndex = cleaningData.findIndex(c => c.id === newCleaning.id);
+                    if (failedIndex !== -1) {
+                        cleaningData.splice(failedIndex, 1);
+                        renderCleaning();
+                        renderAdminCleaning();
+                    }
+                    alert('❌ Error menyimpan ke database: ' + error.message);
+                });
+        });
+
+        // Add activity form toggle
+        document.getElementById('addActivityBtn').addEventListener('click', function() {
+            document.getElementById('addActivityForm').classList.toggle('hidden');
+        });
+
+        document.getElementById('cancelActivityBtn').addEventListener('click', function() {
+            document.getElementById('addActivityForm').classList.add('hidden');
+            clearActivityForm();
+        });
+
+        // Save activity
+        document.getElementById('saveActivityBtn').addEventListener('click', function() {
+            const name = document.getElementById('activityName').value.trim();
+            const date = document.getElementById('activityDate').value.trim();
+            const description = document.getElementById('activityDescription').value.trim();
+            const photoFile = document.getElementById('activityPhoto').files[0];
+            
+            if (!name || !date || !description) {
+                alert('Mohon lengkapi semua field yang wajib!');
+                return;
+            }
+            
+            // Convert photo to base64 if exists
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const activityData = {
+                        name: name,
+                        date: date,
+                        description: description,
+                        photo: e.target.result,
+                        timestamp: new Date()
+                    };
+                    
+                    saveActivityToFirestore(activityData);
+                };
+                reader.readAsDataURL(photoFile);
+            } else {
+                const activityData = {
+                    name: name,
+                    date: date,
+                    description: description,
+                    photo: null,
+                    timestamp: new Date()
+                };
+                
+                saveActivityToFirestore(activityData);
+            }
+        });
+
+        function saveActivityToFirestore(activityData) {
+            // Add to local array first for immediate display
+            const newActivity = { id: Date.now().toString(), ...activityData };
+            activitiesData.unshift(newActivity); // Add to beginning for newest first
+            
+            // Update displays immediately
+            renderActivities();
+            renderAdminActivities();
+            
+            // Save to Firestore
+            db.collection('activities').add(activityData)
+                .then((docRef) => {
+                    // Update the local data with the real Firestore ID
+                    const activityIndex = activitiesData.findIndex(a => a.id === newActivity.id);
+                    if (activityIndex !== -1) {
+                        activitiesData[activityIndex].id = docRef.id;
+                    }
+                    
+                    alert('✅ Kegiatan berhasil ditambahkan dan muncul di halaman user!');
+                    clearActivityForm();
+                    document.getElementById('addActivityForm').classList.add('hidden');
+                })
+                .catch((error) => {
+                    // Remove from local array if Firestore save failed
+                    const failedIndex = activitiesData.findIndex(a => a.id === newActivity.id);
+                    if (failedIndex !== -1) {
+                        activitiesData.splice(failedIndex, 1);
+                        renderActivities();
+                        renderAdminActivities();
+                    }
+                    alert('❌ Error menyimpan ke database: ' + error.message);
+                });
+        }
+
+        // Photo preview functionality
+        document.getElementById('studentPhoto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('studentPhotoImg').src = e.target.result;
+                    document.getElementById('studentPhotoPreview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('studentPhotoPreview').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('activityPhoto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('activityPhotoImg').src = e.target.result;
+                    document.getElementById('activityPhotoPreview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('activityPhotoPreview').classList.add('hidden');
+            }
+        });
+
+        // Helper functions
+        function populateStudentCheckboxes() {
+            const container = document.getElementById('studentCheckboxes');
+            
+            if (studentsData.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">Belum ada siswa yang terdaftar. Tambahkan siswa terlebih dahulu.</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            studentsData.forEach(student => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'flex items-center space-x-2 mb-2';
+                checkboxDiv.innerHTML = `
+                    <input type="checkbox" id="student_${student.id}" value="${student.name}" 
+                           class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="student_${student.id}" class="text-sm font-medium text-gray-700 cursor-pointer">
+                        ${student.name} (Absen: ${student.number})
+                    </label>
+                `;
+                container.appendChild(checkboxDiv);
+            });
+        }
+        
+        function getSelectedStudents() {
+            const checkboxes = document.querySelectorAll('#studentCheckboxes input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(checkbox => checkbox.value);
+        }
+        
+        function clearStudentForm() {
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentNumber').value = '';
+            document.getElementById('studentMotivation').value = '';
+            document.getElementById('studentPhoto').value = '';
+            document.getElementById('studentPhotoPreview').classList.add('hidden');
+        }
+
+        function clearCleaningForm() {
+            document.getElementById('cleaningDay').value = '';
+            // Clear all checkboxes
+            const checkboxes = document.querySelectorAll('#studentCheckboxes input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+        }
+
+        function clearActivityForm() {
+            document.getElementById('activityName').value = '';
+            document.getElementById('activityDate').value = '';
+            document.getElementById('activityDescription').value = '';
+            document.getElementById('activityPhoto').value = '';
+            document.getElementById('activityPhotoPreview').classList.add('hidden');
+        }
+        
+        function clearSocialForm() {
+            document.getElementById('socialButtonName').value = '';
+            document.getElementById('socialButtonLink').value = '';
+            document.getElementById('socialButtonColor').value = '#344966';
+            document.getElementById('socialButtonIcon').value = '';
+        }
+
+        // Load data functions
+        function loadStudentsData() {
+            db.collection('students').orderBy('number').get()
+                .then((querySnapshot) => {
+                    studentsData = [];
+                    querySnapshot.forEach((doc) => {
+                        studentsData.push({id: doc.id, ...doc.data()});
+                    });
+                    renderStudents();
+                    renderAdminStudents();
+                });
+        }
+
+        function loadCleaningData() {
+            db.collection('cleaning').get()
+                .then((querySnapshot) => {
+                    cleaningData = [];
+                    querySnapshot.forEach((doc) => {
+                        cleaningData.push({id: doc.id, ...doc.data()});
+                    });
+                    renderCleaning();
+                    renderAdminCleaning();
+                });
+        }
+
+        function loadActivitiesData() {
+            db.collection('activities').orderBy('timestamp', 'desc').get()
+                .then((querySnapshot) => {
+                    activitiesData = [];
+                    querySnapshot.forEach((doc) => {
+                        activitiesData.push({id: doc.id, ...doc.data()});
+                    });
+                    renderActivities();
+                    renderAdminActivities();
+                });
+        }
+
+        function loadScheduleData() {
+            db.collection('schedule').get()
+                .then((querySnapshot) => {
+                    scheduleData = {};
+                    querySnapshot.forEach((doc) => {
+                        scheduleData[doc.id] = doc.data();
+                    });
+                    renderSchedule();
+                    renderAdminSchedule();
+                });
+        }
+        
+        function loadSocialButtonsData() {
+            db.collection('socialButtons').get()
+                .then((querySnapshot) => {
+                    socialButtonsData = [];
+                    querySnapshot.forEach((doc) => {
+                        socialButtonsData.push({id: doc.id, ...doc.data()});
+                    });
+                    renderSocialButtons();
+                    renderAdminSocialButtons();
+                });
+        }
+
+        function loadAdminData() {
+            loadStudentsData();
+            loadCleaningData();
+            loadActivitiesData();
+            loadScheduleData();
+            loadSocialButtonsData();
+        }
+
+        // Render functions
+        function renderStudents() {
+            const container = document.getElementById('studentsList');
+            container.innerHTML = '';
+            
+            const colorSchemes = [
+                { bg: 'bg-gradient-to-br from-lightest to-light', avatar: 'bg-light', text: 'text-primary', border: 'border-light' },
+                { bg: 'bg-gradient-to-br from-light to-accent', avatar: 'bg-accent', text: 'text-white', border: 'border-accent' },
+                { bg: 'bg-gradient-to-br from-accent to-secondary', avatar: 'bg-secondary', text: 'text-white', border: 'border-secondary' },
+                { bg: 'bg-gradient-to-br from-secondary to-primary', avatar: 'bg-primary', text: 'text-white', border: 'border-primary' },
+                { bg: 'bg-gradient-to-br from-lightest/80 to-light/80', avatar: 'bg-light', text: 'text-secondary', border: 'border-light' },
+                { bg: 'bg-gradient-to-br from-light/80 to-accent/80', avatar: 'bg-accent', text: 'text-white', border: 'border-accent' },
+                { bg: 'bg-gradient-to-br from-accent/80 to-secondary/80', avatar: 'bg-secondary', text: 'text-white', border: 'border-secondary' },
+                { bg: 'bg-gradient-to-br from-secondary/80 to-primary/80', avatar: 'bg-primary', text: 'text-white', border: 'border-primary' },
+                { bg: 'bg-gradient-to-br from-lightest to-light/60', avatar: 'bg-light', text: 'text-primary', border: 'border-light' },
+                { bg: 'bg-gradient-to-br from-light/60 to-accent/60', avatar: 'bg-accent', text: 'text-white', border: 'border-accent' },
+                { bg: 'bg-gradient-to-br from-accent/60 to-secondary/60', avatar: 'bg-secondary', text: 'text-white', border: 'border-secondary' },
+                { bg: 'bg-gradient-to-br from-secondary/60 to-primary/60', avatar: 'bg-primary', text: 'text-white', border: 'border-primary' }
+            ];
+            
+        studentsData.forEach((student, index) => {
+                const scheme = colorSchemes[index % colorSchemes.length];
+                
+                const studentCard = document.createElement('div');
+                studentCard.className = `student-card ${scheme.bg} p-4 sm:p-6 rounded-xl sm:rounded-2xl ${scheme.border} border shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-row items-center animate-fadeDown`;
+                
+                const avatarContent = student.photo 
+                    ? `<img src="${student.photo}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-md border-2 border-white mr-4 flex-shrink-0" alt="${student.name}">`
+                    : `<div class="w-16 h-16 sm:w-20 sm:h-20 ${scheme.avatar} rounded-full flex items-center justify-center ${scheme.text} font-bold text-2xl shadow-md mr-4 flex-shrink-0">${student.name.charAt(0)}${student.number}</div>`;
+                
+                studentCard.innerHTML = `
+                    ${avatarContent}
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-gray-800 text-base sm:text-lg lg:text-xl truncate">${student.name}</h3>
+                        <p class="text-xs sm:text-sm lg:text-base text-gray-600 font-medium">📋 Absen: ${student.number}</p>
+                        <p class="text-xs sm:text-sm lg:text-base ${scheme.text} italic mt-1 sm:mt-2 font-medium line-clamp-2">"${student.motivation}"</p>
+                    </div>
+                `;
+                container.appendChild(studentCard);
+            });
+        }
+
+        function renderAdminStudents() {
+            const container = document.getElementById('adminStudentsList');
+            container.innerHTML = '';
+            
+            studentsData.forEach((student) => {
+                const studentItem = document.createElement('div');
+                studentItem.className = 'bg-gray-50 p-4 rounded-lg flex justify-between items-center';
+                studentItem.innerHTML = `
+                    <div>
+                        <h4 class="font-semibold">${student.name}</h4>
+                        <p class="text-sm text-gray-600">Absen: ${student.number} | "${student.motivation}"</p>
+                    </div>
+                    <button onclick="deleteStudent('${student.id}')" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors">Hapus</button>
+                `;
+                container.appendChild(studentItem);
+            });
+        }
+
+        function renderCleaning() {
+            const container = document.getElementById('cleaningList');
+            container.innerHTML = '';
+            
+            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+            const daySchemes = [
+                { bg: 'bg-gradient-to-r from-lightest to-light', border: 'border-l-4 border-accent', text: 'text-primary', icon: '🌅' },
+                { bg: 'bg-gradient-to-r from-light to-accent/30', border: 'border-l-4 border-secondary', text: 'text-secondary', icon: '🌞' },
+                { bg: 'bg-gradient-to-r from-accent/20 to-secondary/20', border: 'border-l-4 border-primary', text: 'text-primary', icon: '🌤️' },
+                { bg: 'bg-gradient-to-r from-secondary/20 to-primary/20', border: 'border-l-4 border-accent', text: 'text-secondary', icon: '🌈' },
+                { bg: 'bg-gradient-to-r from-primary/10 to-lightest', border: 'border-l-4 border-secondary', text: 'text-primary', icon: '🌟' }
+            ];
+            
+                days.forEach((day, index) => {
+                const dayData = cleaningData.find(item => item.day === day);
+                const scheme = daySchemes[index];
+                
+                const cleaningItem = document.createElement('div');
+                cleaningItem.className = `${scheme.bg} p-6 rounded-2xl ${scheme.border} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer animate-fadeDown`;
+                cleaningItem.innerHTML = `
+                    <div class="flex items-center space-x-3 mb-3" data-day="${day}">
+                        <span class="text-2xl">${scheme.icon}</span>
+                        <h3 class="font-bold ${scheme.text} text-xl">${day}</h3>
+                    </div>
+                    <div id="cleaning-details-${day}" class="cleaning-details hidden mt-4">
+                        <!-- Details will be populated here -->
+                    </div>
+                `;
+                container.appendChild(cleaningItem);
+                
+                // Add click event listener
+                cleaningItem.querySelector(`[data-day="${day}"]`).addEventListener('click', function() {
+                    const detailsContainer = document.getElementById(`cleaning-details-${day}`);
+                    if (detailsContainer.classList.contains('hidden')) {
+                        // Show details
+                        detailsContainer.classList.remove('hidden');
+                        if (dayData) {
+                            // Get student details
+                            const studentNames = dayData.students.split(', ').map(name => name.trim());
+                            const studentDetails = studentNames.map(name => {
+                                const student = studentsData.find(s => s.name === name);
+                                if (student) {
+                                    const photo = student.photo ? 
+                                        `<img src="${student.photo}" class="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover shadow-md border-2 border-white" alt="${student.name}">` :
+                                        `<div class="w-12 h-12 sm:w-16 sm:h-16 bg-light rounded-full flex items-center justify-center text-primary font-bold text-lg shadow-md">${student.name.charAt(0)}</div>`;
+                                    return `
+                                        <div class="flex flex-col items-center space-y-2 p-2">
+                                            ${photo}
+                                            <span class="font-semibold text-gray-800 text-sm">${student.name}</span>
+                                            <span class="text-xs text-gray-600">Absen: ${student.number}</span>
+                                        </div>
+                                    `;
+                                } else {
+                                    return `
+                                        <div class="flex flex-col items-center space-y-2 p-2">
+                                            <div class="w-12 h-12 sm:w-16 sm:h-16 bg-light rounded-full flex items-center justify-center text-primary font-bold text-lg shadow-md">${name.charAt(0)}</div>
+                                            <span class="font-semibold text-gray-800 text-sm">${name}</span>
+                                        </div>
+                                    `;
+                                }
+                            }).join('');
+                            
+                            detailsContainer.innerHTML = `
+                                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                    ${studentDetails}
+                                </div>
+                            `;
+                        } else {
+                            detailsContainer.innerHTML = '<p class="text-gray-600 italic">Belum ada jadwal piket untuk hari ini</p>';
+                        }
+                    } else {
+                        // Hide details
+                        detailsContainer.classList.add('hidden');
+                    }
+                });
+            });
+        }
+
+        function renderAdminCleaning() {
+            const container = document.getElementById('adminCleaningList');
+            container.innerHTML = '';
+            
+            cleaningData.forEach((cleaning) => {
+                const cleaningItem = document.createElement('div');
+                cleaningItem.className = 'bg-gray-50 p-4 rounded-lg flex justify-between items-center';
+                cleaningItem.innerHTML = `
+                    <div>
+                        <h4 class="font-semibold">${cleaning.day}</h4>
+                        <p class="text-sm text-gray-600">${cleaning.students}</p>
+                    </div>
+                    <button onclick="deleteCleaning('${cleaning.id}')" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors">Hapus</button>
+                `;
+                container.appendChild(cleaningItem);
+            });
+        }
+
+        function renderActivities() {
+            const container = document.getElementById('activitiesList');
+            container.innerHTML = '';
+            
+            const activitySchemes = [
+                { bg: 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50', icon: 'bg-indigo-200', iconColor: 'text-indigo-600', border: 'border-indigo-200' },
+                { bg: 'bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50', icon: 'bg-emerald-200', iconColor: 'text-emerald-600', border: 'border-emerald-200' },
+                { bg: 'bg-gradient-to-br from-rose-50 via-pink-50 to-red-50', icon: 'bg-rose-200', iconColor: 'text-rose-600', border: 'border-rose-200' },
+                { bg: 'bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50', icon: 'bg-amber-200', iconColor: 'text-amber-600', border: 'border-amber-200' },
+                { bg: 'bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50', icon: 'bg-violet-200', iconColor: 'text-violet-600', border: 'border-violet-200' },
+                { bg: 'bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50', icon: 'bg-sky-200', iconColor: 'text-sky-600', border: 'border-sky-200' }
+            ];
+            
+                activitiesData.forEach((activity, index) => {
+                const scheme = activitySchemes[index % activitySchemes.length];
+                
+                const activityItem = document.createElement('div');
+                activityItem.className = `${scheme.bg} p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl border ${scheme.border} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-fadeDown`;
+                
+                const iconContent = activity.photo 
+                    ? `<img src="${activity.photo}" class="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-lg sm:rounded-xl lg:rounded-2xl object-cover shadow-md border-2 border-white flex-shrink-0" alt="${activity.name}">`
+                    : `<div class="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 ${scheme.icon} rounded-lg sm:rounded-xl lg:rounded-2xl flex items-center justify-center shadow-md flex-shrink-0">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 ${scheme.iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>`;
+                
+                activityItem.innerHTML = `
+                    <div class="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4 lg:space-x-6">
+                        <div class="flex items-center space-x-3 sm:block sm:space-x-0 w-full sm:w-auto">
+                            ${iconContent}
+                        </div>
+                        <div class="flex-1 min-w-0 w-full">
+                            <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-2 sm:mb-3 leading-tight">${activity.name}</h3>
+                            <div class="flex items-center space-x-2 mb-3 sm:mb-4">
+                                <span class="text-base sm:text-lg flex-shrink-0">📅</span>
+                                <p class="text-sm sm:text-base lg:text-lg font-semibold text-gray-700">${new Date(activity.date).toLocaleDateString('id-ID')}</p>
+                            </div>
+                            <p class="text-gray-700 text-sm sm:text-base lg:text-lg leading-relaxed break-words">${activity.description}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(activityItem);
+            });
+        }
+
+        function renderAdminActivities() {
+            const container = document.getElementById('adminActivitiesList');
+            container.innerHTML = '';
+            
+            activitiesData.forEach((activity) => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'bg-gray-50 p-4 rounded-lg';
+                activityItem.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-semibold">${activity.name}</h4>
+                            <p class="text-sm text-gray-600">${new Date(activity.date).toLocaleDateString('id-ID')}</p>
+                            <p class="text-sm text-gray-700 mt-2">${activity.description}</p>
+                        </div>
+                        <button onclick="deleteActivity('${activity.id}')" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors ml-4">Hapus</button>
+                    </div>
+                `;
+                container.appendChild(activityItem);
+            });
+        }
+
+        function renderSchedule() {
+            const container = document.getElementById('scheduleTable');
+            container.innerHTML = '';
+            
+            const timeSlots = [
+                '07:00-07:45', '07:45-08:30', '08:30-09:15', '09:15-10:00', '10:15-11:00',
+                '11:00-11:45', '11:45-12:30', '13:00-13:45', '13:45-14:30', '14:30-15:15', '15:15-16:00'
+            ];
+            
+            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+            const dayIcons = ['🌅', '🌞', '🌤️', '🌈', '🌟'];
+            
+            timeSlots.forEach((time, timeIndex) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-lightest transition-all';
+                
+                let rowHTML = `<td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 font-bold bg-light text-primary text-xs sm:text-sm lg:text-base">${time}</td>`;
+                
+                days.forEach((day, dayIndex) => {
+                    let subject = '';
+                    if (scheduleData.weekly && scheduleData.weekly[day] && scheduleData.weekly[day][timeIndex]) {
+                        subject = scheduleData.weekly[day][timeIndex];
+                    }
+                    
+                    rowHTML += `<td class="border-2 border-light px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center font-semibold text-secondary text-xs sm:text-sm lg:text-base">${subject}</td>`;
+                });
+                
+                row.innerHTML = rowHTML;
+                container.appendChild(row);
+            });
+        }
+
+        function renderAdminSchedule() {
+            const container = document.getElementById('adminScheduleTable');
+            container.innerHTML = '';
+            
+            const timeSlots = [
+                '07:00-07:45', '07:45-08:30', '08:30-09:15', '09:15-10:00', '10:15-11:00',
+                '11:00-11:45', '11:45-12:30', '13:00-13:45', '13:45-14:30', '14:30-15:15', '15:15-16:00'
+            ];
+            
+            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+            
+            timeSlots.forEach((time, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="border border-gray-300 px-2 sm:px-4 py-2 font-medium bg-gray-50 text-xs sm:text-sm lg:text-base">${time}</td>
+                    ${days.map(day => `
+                        <td class="border border-gray-300 px-1 sm:px-2 py-1">
+                            <input type="text" class="w-full px-1 sm:px-2 py-1 text-xs sm:text-sm border-0 focus:ring-1 focus:ring-indigo-500" 
+                                   id="schedule_${day}_${index}" placeholder="Mata Pelajaran">
+                        </td>
+                    `).join('')}
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // Reset cleaning
+        document.getElementById('resetCleaningBtn').addEventListener('click', function() {
+            if (confirm('⚠️ Yakin ingin menghapus SEMUA jadwal piket? Tindakan ini tidak dapat dibatalkan!')) {
+                // Clear local data
+                cleaningData = [];
+                
+                // Update displays immediately
+                renderCleaning();
+                renderAdminCleaning();
+                
+                // Delete all cleaning documents from Firestore
+                db.collection('cleaning').get()
+                    .then((querySnapshot) => {
+                        const batch = db.batch();
+                        querySnapshot.forEach((doc) => {
+                            batch.delete(doc.ref);
+                        });
+                        return batch.commit();
+                    })
+                    .then(() => {
+                        alert('✅ Semua jadwal piket berhasil dihapus!');
+                    })
+                    .catch((error) => {
+                        alert('❌ Error menghapus jadwal piket: ' + error.message);
+                        // Reload data if error occurred
+                        loadCleaningData();
+                    });
+            }
+        });
+
+        // Reset activities
+        document.getElementById('resetActivitiesBtn').addEventListener('click', function() {
+            if (confirm('⚠️ Yakin ingin menghapus SEMUA kegiatan? Tindakan ini tidak dapat dibatalkan!')) {
+                // Clear local data
+                activitiesData = [];
+                
+                // Update displays immediately
+                renderActivities();
+                renderAdminActivities();
+                
+                // Delete all activities documents from Firestore
+                db.collection('activities').get()
+                    .then((querySnapshot) => {
+                        const batch = db.batch();
+                        querySnapshot.forEach((doc) => {
+                            batch.delete(doc.ref);
+                        });
+                        return batch.commit();
+                    })
+                    .then(() => {
+                        alert('✅ Semua kegiatan berhasil dihapus!');
+                    })
+                    .catch((error) => {
+                        alert('❌ Error menghapus kegiatan: ' + error.message);
+                        // Reload data if error occurred
+                        loadActivitiesData();
+                    });
+            }
+        });
+
+        // Delete functions
+        function deleteStudent(id) {
+            if (confirm('Yakin ingin menghapus siswa ini?')) {
+                db.collection('students').doc(id).delete()
+                    .then(() => {
+                        alert('Siswa berhasil dihapus!');
+                        loadStudentsData();
+                    })
+                    .catch((error) => {
+                        alert('Error: ' + error.message);
+                    });
+            }
+        }
+
+        function deleteCleaning(id) {
+            if (confirm('Yakin ingin menghapus jadwal piket ini?')) {
+                db.collection('cleaning').doc(id).delete()
+                    .then(() => {
+                        alert('Jadwal piket berhasil dihapus!');
+                        loadCleaningData();
+                    })
+                    .catch((error) => {
+                        alert('Error: ' + error.message);
+                    });
+            }
+        }
+
+        function deleteActivity(id) {
+            if (confirm('Yakin ingin menghapus kegiatan ini?')) {
+                db.collection('activities').doc(id).delete()
+                    .then(() => {
+                        alert('Kegiatan berhasil dihapus!');
+                        loadActivitiesData();
+                    })
+                    .catch((error) => {
+                        alert('Error: ' + error.message);
+                    });
+            }
+        }
+
+        // Reset schedule
+        document.getElementById('resetScheduleBtn').addEventListener('click', function() {
+            if (confirm('⚠️ Yakin ingin menghapus SEMUA jadwal pelajaran? Tindakan ini tidak dapat dibatalkan!')) {
+                // Clear all schedule inputs
+                const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+                const timeSlots = [
+                    '07:00-07:45', '07:45-08:30', '08:30-09:15', '09:15-10:00', '10:15-11:00',
+                    '11:00-11:45', '11:45-12:30', '13:00-13:45', '13:45-14:30', '14:30-15:15', '15:15-16:00'
+                ];
+                
+                days.forEach(day => {
+                    for (let i = 0; i < timeSlots.length; i++) {
+                        const input = document.getElementById(`schedule_${day}_${i}`);
+                        if (input) input.value = '';
+                    }
+                });
+                
+                // Clear local data
+                scheduleData = {};
+                
+                // Update user display immediately
+                renderSchedule();
+                
+                // Delete from Firestore
+                db.collection('schedule').doc('weekly').delete()
+                    .then(() => {
+                        alert('✅ Semua jadwal pelajaran berhasil dihapus!');
+                    })
+                    .catch((error) => {
+                        alert('❌ Error menghapus jadwal: ' + error.message);
+                    });
+            }
+        });
+
+        // Save schedule
+        document.getElementById('saveScheduleBtn').addEventListener('click', function() {
+            const newScheduleData = {};
+            const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+            const timeSlots = [
+                '07:00-07:45', '07:45-08:30', '08:30-09:15', '09:15-10:00', '10:15-11:00',
+                '11:00-11:45', '11:45-12:30', '13:00-13:45', '13:45-14:30', '14:30-15:15', '15:15-16:00'
+            ];
+            
+            days.forEach(day => {
+                newScheduleData[day] = [];
+                for (let i = 0; i < timeSlots.length; i++) {
+                    const input = document.getElementById(`schedule_${day}_${i}`);
+                    newScheduleData[day].push(input ? (input.value || '') : '');
+                }
+            });
+            
+            // Update local schedule data immediately
+            scheduleData = { weekly: newScheduleData };
+            
+            // Update user schedule display immediately
+            renderSchedule();
+            
+            // Save to Firestore
+            db.collection('schedule').doc('weekly').set({
+                ...newScheduleData,
+                timestamp: new Date()
+            })
+                .then(() => {
+                    alert('✅ Jadwal berhasil disimpan dan muncul di halaman user!');
+                })
+                .catch((error) => {
+                    alert('❌ Error menyimpan jadwal: ' + error.message);
+                });
+        });
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load initial data for user view
+            loadStudentsData();
+            loadCleaningData();
+            loadActivitiesData();
+            loadScheduleData();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96876ac8c78bd8da',t:'MTc1NDA3MzEzNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
